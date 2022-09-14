@@ -3,7 +3,6 @@ import pandas as pd  # pip install pandas openpyxl
 import plotly.express as px  # pip install plotly-express
 import streamlit as st  # pip install streamlit
 
-# emojis: https://www.webfx.com/tools/emoji-cheat-sheet/
 st.set_page_config(page_title="Sales Dashboard", page_icon=":bar_chart:", layout="wide")
 
 # ---- READ EXCEL ----
@@ -30,6 +29,13 @@ city = st.sidebar.multiselect(
     options=df["City"].unique(),
     default=df["City"].unique()
 )
+
+# st.sidebar.header("Please Filter Here:")
+# city = st.sidebar.multiselect(
+#     "Select the Product Line:",
+#     options=df["Product line"].unique(),
+#     default=df["Product line"].unique()
+# )
 
 customer_type = st.sidebar.multiselect(
     "Select the Customer Type:",
@@ -74,26 +80,55 @@ st.markdown("""---""")
 sales_by_product_line = (
     df_selection.groupby(by=["Product line"]).sum()[["Total"]].sort_values(by="Total")
 )
+
 fig_product_sales = px.bar(
     sales_by_product_line,
     x="Total",
     y=sales_by_product_line.index,
     orientation="h",
     title="<b>Sales by Product Line</b>",
-    color_discrete_sequence=["#0083B8"] * len(sales_by_product_line),
+    color_discrete_sequence=["yellow"] * len(sales_by_product_line),
     template="plotly_white",
 )
-fig_product_sales.write_html("aku.html")
-fig_product_sales.update_layout(
-    xaxis=dict(tickmode="linear"),
-    plot_bgcolor="rgba(0,0,0,0)",
-    yaxis=(dict(showgrid=False)),
+#Quandity by product line
+
+quantity_by_product_line = (
+    df_selection.groupby(by=["Product line"]).sum()[["Quantity"]].sort_values(by="Quantity")
 )
-#only for styling
-# fig_product_sales.update_layout(
-#     plot_bgcolor="rgba(0,0,0,0)",
-#     xaxis=(dict(showgrid=False))
+fig_product_quantity = px.bar(
+    quantity_by_product_line,
+    x="Quantity",
+    y=quantity_by_product_line.index,
+    orientation="h",
+    title="<b>Sales by Product Line</b>",
+    color_discrete_sequence=["red"] * len(sales_by_product_line),
+    template="plotly_white",
+)
+# fig_product_quantity = px.pie(
+#     quantity_by_product_line,
+#     value= quantity_by_product_line.index,
+#     names= "Quantity"
+#     # quantity_by_product_line='Quantity',
+#     # Product_line='Product line'
+    
 # )
+# fig_product_sales.write_html("aku.html")
+# fig_product_sales.update_layout(
+#     xaxis=dict(tickmode="linear"),
+#     plot_bgcolor="rgba(0,0,0,0)",
+#     yaxis=(dict(showgrid=False)),
+# )
+
+fig_product_sales.update_layout(
+    plot_bgcolor="rgba(0,0,0,0)",
+    xaxis=(dict(showgrid=False))
+)
+
+# making pie chart
+# df = px.data.tips()
+# fig = px.pie(df, values='tip', names='day')
+# fig.show()
+
 
 # SALES BY HOUR [BAR CHART]
 sales_by_hour = df_selection.groupby(by=["hour"]).sum()[["Total"]]
@@ -105,25 +140,18 @@ fig_hourly_sales = px.bar(
     color_discrete_sequence=["#0083B8"] * len(sales_by_hour),
     template="plotly_white",
 )
-fig_hourly_sales.write_html("abhin.html")
-fig_hourly_sales.update_layout(
-    xaxis=dict(tickmode="linear"),
-    plot_bgcolor="rgba(0,0,0,0)",
-    yaxis=(dict(showgrid=False)),
-)
+# fig_hourly_sales.write_html("abhin.html")
+# fig_hourly_sales.update_layout(
+#     xaxis=dict(tickmode="linear"),
+#     plot_bgcolor="rgba(0,0,0,0)",
+#     yaxis=(dict(showgrid=False)),
+# )
 
 
 left_column, right_column = st.columns(2)
 left_column.plotly_chart(fig_hourly_sales, use_container_width=True)
 right_column.plotly_chart(fig_product_sales, use_container_width=True)
 
+left_row, right_row = st.columns(2)
+left_row.plotly_chart(fig_product_quantity, use_container_width=True)
 
-# # ---- HIDE STREAMLIT STYLE ----
-# hide_st_style = """
-#             <style>
-#             #MainMenu {visibility: hidden;}
-#             footer {visibility: hidden;}
-#             header {visibility: hidden;}
-#             </style>
-#             """
-# st.markdown(hide_st_style, unsafe_allow_html=True)
