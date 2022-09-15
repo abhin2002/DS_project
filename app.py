@@ -3,6 +3,7 @@ import pandas as pd  # pip install pandas openpyxl
 import plotly.express as px  # pip install plotly-express
 import streamlit as st  # pip install streamlit
 
+
 st.set_page_config(page_title="Sales Dashboard", page_icon=":bar_chart:", layout="wide")
 
 # ---- READ EXCEL ----
@@ -104,6 +105,27 @@ fig_product_quantity = px.bar(
     color_discrete_sequence=["red"] * len(sales_by_product_line),
     template="plotly_white",
 )
+
+#top 10
+# best_selling_prods = pd.DataFrame(df.groupby('Product line').sum()['Quantity'])
+
+# Sorting the dataframe in descending order
+# best_selling_prods.sort_values(by=['quantity'], inplace=True, ascending=False)
+top=df.groupby(by=["Product line"]).sum()[['gross income']]
+# Most selling products
+top.sort_values(by='gross income', inplace=True, ascending=False)
+print(top[:10])
+top= top[:10]
+top_10 = px.bar(
+    top,
+    x=top.index,
+    y=top,
+    orientation="h",
+    title="<b>Sales by Product Line</b>",
+    color_discrete_sequence=["red"] * len(sales_by_product_line),
+    template="plotly_white",
+)
+    
 # fig_product_quantity = px.pie(
 #     quantity_by_product_line,
 #     value= quantity_by_product_line.index,
@@ -154,4 +176,4 @@ right_column.plotly_chart(fig_product_sales, use_container_width=True)
 
 left_row, right_row = st.columns(2)
 left_row.plotly_chart(fig_product_quantity, use_container_width=True)
-
+right_row.plotly_chart(top_10(df, 'Quantity'), use_container_width=True)
