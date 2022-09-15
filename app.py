@@ -1,5 +1,4 @@
 
-
 import pandas as pd  # pip install pandas openpyxl
 import plotly.express as px  # pip install plotly-express
 import streamlit as st  # pip install streamlit
@@ -8,7 +7,7 @@ import streamlit as st  # pip install streamlit
 st.set_page_config(page_title="Sales Dashboard", page_icon=":bar_chart:", layout="wide")
 
 # ---- READ EXCEL ----
-#@st.cache
+@st.cache
 def get_data_from_excel():
     df = pd.read_excel(
         io="supermarkt_sales.xlsx",  #xcel filename
@@ -83,6 +82,12 @@ fig_product_sales = px.bar(
     title="<b>Sales by Product Line</b>",
     color_discrete_sequence=["#0083B8"] * len(sales_by_product_line),
     template="plotly_white",
+)
+fig_product_sales.write_html("aku.html")
+fig_product_sales.update_layout(
+    xaxis=dict(tickmode="linear"),
+    plot_bgcolor="rgba(0,0,0,0)",
+    yaxis=(dict(showgrid=False)),
 )
 #only for styling
 # fig_product_sales.update_layout(
