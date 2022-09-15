@@ -32,6 +32,7 @@ def top_10(df,name):
 
 def main():
     df=get_data_from_excel()
-    top_10(df,'Quantity')
+    print(top_10(df,'Quantity'))
+    
 
 main()
