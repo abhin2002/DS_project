@@ -2,8 +2,7 @@
 import pandas as pd  # pip install pandas openpyxl
 import plotly.express as px  # pip install plotly-express
 import streamlit as st  # pip install streamlit
-# from plot import piePlot
-
+from  sub import top_10
 
 st.set_page_config(page_title="Sales Dashboard", page_icon=":bar_chart:", layout="wide")
 
@@ -11,11 +10,11 @@ st.set_page_config(page_title="Sales Dashboard", page_icon=":bar_chart:", layout
 @st.cache
 def get_data_from_excel():
     df = pd.read_excel(
-        io="supermarkt_sales.xlsx",  #xcel filename
+        io="Sales.xlsx",  #xcel filename
         engine="openpyxl",
         sheet_name="Sales",          #sheet name
-        skiprows=3,                  #rows need to skip
-        usecols="B:R",               
+        # skiprows=3,                  #rows need to skip
+        usecols="B:R",               #color want to use
         nrows=1000,                  #rows included in my selection
     )
     # Add 'hour' column to dataframe
@@ -23,7 +22,8 @@ def get_data_from_excel():
     return df
 
 df = get_data_from_excel()
-# piePlot(df)
+
+
 
 # ---- SIDEBAR ----
 st.sidebar.header("Please Filter Here:")
@@ -95,15 +95,25 @@ fig_product_sales = px.bar(
 )
 #Quandity by product line
 
+# gender=top_10(df,'Gender')
+# gender_chart = px.bar(
+#     gender,
+#     x="Quantity",
+#     y=gender.index,
+#     orientation="h",
+#     title="<b>Gender by Product Line</b>",
+#     color_discrete_sequence=["yellow"] * len(sales_by_product_line),
+#     template="plotly_white",
+# )
 quantity_by_product_line = (
     df_selection.groupby(by=["Product line"]).sum()[["Quantity"]].sort_values(by="Quantity")
 )
 fig_product_quantity = px.bar(
     quantity_by_product_line,
-    x=quantity_by_product_line.index,
-    y="Quantity",
-    #orientation="v",
-    title="<b>Quantity by Product Line</b>",
+    x="Quantity",
+    y=quantity_by_product_line.index,
+    orientation="h",
+    title="<b>Sales by Product Line</b>",
     color_discrete_sequence=["red"] * len(sales_by_product_line),
     template="plotly_white",
 )
@@ -117,16 +127,18 @@ fig_product_quantity = px.bar(
 # Most selling products
 # top.sort_values(by='gross income', inplace=True, ascending=False)
 # print(top[:10])
-# top= top[:10]
-# top_10 = px.bar(
-#     top,
-#     x=top.index,
-#     y=top,
-#     orientation="h",
-#     title="<b>Sales by Product Line</b>",
-#     color_discrete_sequence=["red"] * len(sales_by_product_line),
-#     template="plotly_white",
-# )
+top= top_10(df, 'gross income')
+gross_income_figures = px.bar(
+    top,
+    x='gross income',
+    y=top.index,
+    orientation="h",
+    title="<b>Gross income by Product Line</b>",
+    color_discrete_sequence=["red"] * len(sales_by_product_line),
+    template="plotly_white",
+)
+
+# top_10(df, 'Quantity')
     
 # fig_product_quantity = px.pie(
 #     quantity_by_product_line,
@@ -178,12 +190,7 @@ right_column.plotly_chart(fig_product_sales, use_container_width=True)
 
 left_row, right_row = st.columns(2)
 left_row.plotly_chart(fig_product_quantity, use_container_width=True)
-<<<<<<< HEAD
-# right_row.plotly_chart(top_10(df, 'Quantity'), use_container_width=True)
-=======
-<<<<<<< HEAD
-right_row.plotly_chart(top_10(df, 'Quantity'), use_container_width=True)
-=======
-right_row.plotly_chart(top_10(df, 'Quantity'), use_container_width=True)
->>>>>>> 111d2afeab43d624d4d599e53159486f60bcbd16
->>>>>>> b79095cc74e43294f3022c1b7728c7fc48ce1fdc
+right_row.plotly_chart(gross_income_figures, use_container_width=True)
+
+left_row, right_row = st.columns(2)
+left_row.plotly_chart(gender_chart, use_container_width=True)
