@@ -1,13 +1,14 @@
 from dataclasses import replace
 import pandas as pd
+import random
 
 PLACES=['Thrissur','Ernamkulam','Kozhikode','Trivandrum','Triprayar','Kannur','Chennai','Mumbai','Banglore','Delhi']
 
 df=pd.read_excel('D:\prgrming\git\DS_project\supermarkt_sales.xlsx',skiprows=3)
-i=0
+# i=0
 list=[]
 for i in range(1000):
-    list.append(PLACES[i%10])
+    list.append(PLACES[random.randrange(0,10)])
 # print(df.tail)
 
 df['City']=list
