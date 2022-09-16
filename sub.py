@@ -26,13 +26,12 @@ def top_10(df,name):
     top=df.groupby(by=["Product line"]).sum()[[name]]
     # Most selling products
     top.sort_values(by=name, inplace=True, ascending=False)
-    # print(top[:10])
+    print(top[:10])
     return top[:10]
 
 
 def main():
     df=get_data_from_excel()
-    print(top_10(df,'Quantity'))
-    
+    top_10(df,'Quantity')
 
 main()

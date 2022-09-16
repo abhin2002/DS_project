@@ -176,4 +176,8 @@ right_column.plotly_chart(fig_product_sales, use_container_width=True)
 
 left_row, right_row = st.columns(2)
 left_row.plotly_chart(fig_product_quantity, use_container_width=True)
+<<<<<<< HEAD
 right_row.plotly_chart(top_10(df, 'Quantity'), use_container_width=True)
+=======
+right_row.plotly_chart(top_10(df, 'Quantity'), use_container_width=True)
+>>>>>>> 111d2afeab43d624d4d599e53159486f60bcbd16
