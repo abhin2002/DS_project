@@ -1,7 +1,7 @@
-
 import pandas as pd  # pip install pandas openpyxl
 import plotly.express as px  # pip install plotly-express
 import streamlit as st  # pip install streamlit
+
 # from plot import piePlot
 
 
@@ -11,16 +11,17 @@ st.set_page_config(page_title="Sales Dashboard", page_icon=":bar_chart:", layout
 @st.cache
 def get_data_from_excel():
     df = pd.read_excel(
-        io="supermarkt_sales.xlsx",  #xcel filename
+        io="supermarkt_sales.xlsx",  # xcel filename
         engine="openpyxl",
-        sheet_name="Sales",          #sheet name
-        skiprows=3,                  #rows need to skip
-        usecols="B:R",               
-        nrows=1000,                  #rows included in my selection
+        sheet_name="Sales",  # sheet name
+        skiprows=3,  # rows need to skip
+        usecols="B:R",
+        nrows=1000,  # rows included in my selection
     )
     # Add 'hour' column to dataframe
     df["hour"] = pd.to_datetime(df["Time"], format="%H:%M:%S").dt.hour
     return df
+
 
 df = get_data_from_excel()
 # piePlot(df)
@@ -28,17 +29,14 @@ df = get_data_from_excel()
 # ---- SIDEBAR ----
 st.sidebar.header("Please Filter Here:")
 city = st.sidebar.multiselect(
-    "Select the City:",
-    options=df["City"].unique(),
-    default=df["City"].unique()
+    "Select the City:", options=df["City"].unique(), default=df["City"].unique()
 )
 
-# st.sidebar.header("Please Filter Here:")
-# city = st.sidebar.multiselect(
-#     "Select the Product Line:",
-#     options=df["Product line"].unique(),
-#     default=df["Product line"].unique()
-# )
+product_line = st.sidebar.multiselect(
+    "Select the Product Line:",
+    options=df["Product_line"].unique(),
+    default=df["Product_line"].unique(),
+)
 
 customer_type = st.sidebar.multiselect(
     "Select the Customer Type:",
@@ -47,13 +45,16 @@ customer_type = st.sidebar.multiselect(
 )
 
 gender = st.sidebar.multiselect(
-    "Select the Gender:",
-    options=df["Gender"].unique(),
-    default=df["Gender"].unique()
+    "Select the Gender:", options=df["Gender"].unique(), default=df["Gender"].unique()
+)
+
+insight_product_line = st.sidebar.selectbox(
+    "See insights about buyers of this product line:",
+    options=df["Product_line"].unique(),
 )
 
 df_selection = df.query(
-    "City == @city & Customer_type ==@customer_type & Gender == @gender"
+    "City == @city & Customer_type ==@customer_type & Gender == @gender & Product_line == @product_line"
 )
 
 # ---- MAINPAGE ----
@@ -61,10 +62,16 @@ st.title(":bar_chart: Sales Dashboard")
 st.markdown("##")
 
 # TOP KPI's
-total_sales = int(df_selection["Total"].sum()) #sum of total column
-average_rating = round(df_selection["Rating"].mean(), 1) #mean of rating column and rounded to one decimal
-star_rating = ":star:" * int(round(average_rating, 0))   #rounding the number to intiger and multiply with * imogi
-average_sale_by_transaction = round(df_selection["Total"].mean(), 2) #mean of total column
+total_sales = int(df_selection["Total"].sum())  # sum of total column
+average_rating = round(
+    df_selection["Rating"].mean(), 1
+)  # mean of rating column and rounded to one decimal
+star_rating = ":star:" * int(
+    round(average_rating, 0)
+)  # rounding the number to intiger and multiply with * imogi
+average_sale_by_transaction = round(
+    df_selection["Total"].mean(), 2
+)  # mean of total column
 
 left_column, middle_column, right_column = st.columns(3)
 with left_column:
@@ -81,7 +88,7 @@ st.markdown("""---""")
 
 # SALES BY PRODUCT LINE [BAR CHART]
 sales_by_product_line = (
-    df_selection.groupby(by=["Product line"]).sum()[["Total"]].sort_values(by="Total")
+    df_selection.groupby(by=["Product_line"]).sum()[["Total"]].sort_values(by="Total")
 )
 
 fig_product_sales = px.bar(
@@ -93,48 +100,30 @@ fig_product_sales = px.bar(
     color_discrete_sequence=["yellow"] * len(sales_by_product_line),
     template="plotly_white",
 )
-#Quandity by product line
+# Quantity by product line
 
 quantity_by_product_line = (
-    df_selection.groupby(by=["Product line"]).sum()[["Quantity"]].sort_values(by="Quantity")
+    df_selection.groupby(by=["Product_line"])
+    .sum()[["Quantity"]]
+    .sort_values(by="Quantity")
 )
 fig_product_quantity = px.bar(
     quantity_by_product_line,
     x=quantity_by_product_line.index,
     y="Quantity",
-    #orientation="v",
+    # orientation="v",
     title="<b>Quantity by Product Line</b>",
     color_discrete_sequence=["red"] * len(sales_by_product_line),
     template="plotly_white",
 )
 
-#top 10
-# best_selling_prods = pd.DataFrame(df.groupby('Product line').sum()['Quantity'])
-
-# Sorting the dataframe in descending order
-# best_selling_prods.sort_values(by=['quantity'], inplace=True, ascending=False)
-# top=df.groupby(by=["Product line"]).sum()[['gross income']]
-# Most selling products
-# top.sort_values(by='gross income', inplace=True, ascending=False)
-# print(top[:10])
-# top= top[:10]
-# top_10 = px.bar(
-#     top,
-#     x=top.index,
-#     y=top,
-#     orientation="h",
-#     title="<b>Sales by Product Line</b>",
-#     color_discrete_sequence=["red"] * len(sales_by_product_line),
-#     template="plotly_white",
-# )
-    
 # fig_product_quantity = px.pie(
 #     quantity_by_product_line,
 #     value= quantity_by_product_line.index,
 #     names= "Quantity"
 #     # quantity_by_product_line='Quantity',
 #     # Product_line='Product line'
-    
+
 # )
 # fig_product_sales.write_html("aku.html")
 # fig_product_sales.update_layout(
@@ -144,8 +133,7 @@ fig_product_quantity = px.bar(
 # )
 
 fig_product_sales.update_layout(
-    plot_bgcolor="rgba(0,0,0,0)",
-    xaxis=(dict(showgrid=False))
+    plot_bgcolor="rgba(0,0,0,0)", xaxis=(dict(showgrid=False))
 )
 
 # making pie chart
@@ -171,19 +159,30 @@ fig_hourly_sales = px.bar(
 #     yaxis=(dict(showgrid=False)),
 # )
 
+# INSIGHTS CHART
+invoice_ids = df.query("Product_line == @insight_product_line")["Invoice_ID"].unique()
+required_invoices = df.query(
+    "Invoice_ID in @invoice_ids & Product_line != @insight_product_line"
+)
+other_items = (
+    required_invoices.groupby(by=["Product_line"])
+    .sum()[["Quantity"]]
+    .sort_values(by="Quantity", ascending=False)
+)
+fig_other_items = px.bar(
+    other_items,
+    x=other_items.index,
+    y="Quantity",
+    title=f"People who bought {insight_product_line} items also bought: ",
+    color_discrete_sequence=["#0083B8"] * len(other_items),
+    template="plotly_white",
+)
+
 
 left_column, right_column = st.columns(2)
 left_column.plotly_chart(fig_hourly_sales, use_container_width=True)
 right_column.plotly_chart(fig_product_sales, use_container_width=True)
 
-left_row, right_row = st.columns(2)
-left_row.plotly_chart(fig_product_quantity, use_container_width=True)
-<<<<<<< HEAD
-# right_row.plotly_chart(top_10(df, 'Quantity'), use_container_width=True)
-=======
-<<<<<<< HEAD
-right_row.plotly_chart(top_10(df, 'Quantity'), use_container_width=True)
-=======
-right_row.plotly_chart(top_10(df, 'Quantity'), use_container_width=True)
->>>>>>> 111d2afeab43d624d4d599e53159486f60bcbd16
->>>>>>> b79095cc74e43294f3022c1b7728c7fc48ce1fdc
+left_column, right_column = st.columns(2)
+left_column.plotly_chart(fig_product_quantity, use_container_width=True)
+right_column.plotly_chart(fig_other_items, use_container_width=True)
